@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask stuff:
+instance/*
+.webassets-cache
+# Allow the specific database file even though the folder is ignored
+!instance/payroll_fixed.db
+
+# Environment variables
+.env
+
+# Database
+*.db
+*.sqlite
+# Force Git to allow your main data files
+!payroll_fixed.db
+!instance/payroll_fixed.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environment
+.venv/
+venv/
+ENV/
