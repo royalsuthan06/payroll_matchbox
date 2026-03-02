@@ -23,10 +23,10 @@ class Config:
     SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
     SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '')
-    EMAIL_ENABLED = os.environ.get('EMAIL_ENABLED', 'False').lower() == 'true'
+    EMAIL_ENABLED = os.environ.get('EMAIL_ENABLED', 'True').lower() == 'true'
     
     # Admin email for notifications
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'suthan06it@gmail.com')
 
 class DevelopmentConfig(Config):
     """Development configuration"""

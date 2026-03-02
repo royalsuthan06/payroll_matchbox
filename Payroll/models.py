@@ -31,7 +31,7 @@ class RawMaterial(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'quantity': self.quantity,
+            'quantity': round(self.quantity, 2),
             'unit': self.unit,
             'unit_price': self.unit_price,
             'created_at': self.created_at.isoformat() if self.created_at else None,

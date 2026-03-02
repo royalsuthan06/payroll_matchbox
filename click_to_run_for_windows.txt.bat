@@ -34,6 +34,6 @@ timeout /t 3 /nobreak >nul
 start "" http://127.0.0.1:5000
 
 :: Run the app from the correct identified path
-python "Payroll/Payroll/app.py"
+python "Payroll/app.py"
 
 pause

@@ -4,6 +4,20 @@
 {% block header %}Overview{% endblock %}
 
 {% block content %}
+{% if low_stock_materials %}
+<div class="card" style="border-left: 4px solid #ef4444; margin-bottom: 30px;">
+    <h3 style="color: #ef4444;">⚠️ Low Stock Alerts</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        {% for material in low_stock_materials %}
+        <div
+            style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 10px 15px;">
+            <div style="font-weight: 600; color: #ef4444;">{{ material.name }}</div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">{{ "%.2f"|format(material.quantity) }} {{ material.unit }} remaining</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 <!-- Quick Stats Banner -->
 <div
     style="background: linear-gradient(90deg, var(--accent-color), #88c1ff); padding: 2px; border-radius: 16px; margin-bottom: 30px;">
@@ -121,7 +135,7 @@
                     {% for material in raw_materials %}
                     <tr>
                         <td>{{ material.name }}</td>
-                        <td>{{ material.quantity }} {{ material.unit }}</td>
+                        <td>{{ "%.2f"|format(material.quantity) }} {{ material.unit }}</td>
                         <td>
                             {% if material.quantity < 20 %} <span class="badge badge-danger">Low Stock</span>
                                 {% else %}
@@ -136,20 +150,6 @@
     </div>
 </div>
 
-{% if low_stock_materials %}
-<div class="card" style="border-left: 4px solid #ef4444; margin-bottom: 30px;">
-    <h3 style="color: #ef4444;">⚠️ Low Stock Alerts</h3>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        {% for material in low_stock_materials %}
-        <div
-            style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 10px 15px;">
-            <div style="font-weight: 600; color: #ef4444;">{{ material.name }}</div>
-            <div style="font-size: 0.85rem; color: #94a3b8;">{{ material.quantity }} {{ material.unit }} remaining</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
 <script>
     const ctx = document.getElementById('productionChart').getContext('2d');

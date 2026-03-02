@@ -31,7 +31,7 @@
             <h4 style="margin-top: 0; color: #3b82f6;">Recipe per Bundle</h4>
             <ul style="padding-left: 20px; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0;">
                 {% for item in recipe %}
-                <li>{{ item.name }}: {{ item.quantity }} {{ item.unit }}</li>
+                <li>{{ item.name }}: {{ "%.2f"|format(item.quantity) }} {{ item.unit }}</li>
                 {% endfor %}
             </ul>
         </div>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from models import db, RawMaterial, ProductionLog, MaterialTransaction, Recipe
 from services import ProductionService, InventoryService, ReportService, ProfitService
@@ -65,10 +65,36 @@ def production():
                 return redirect(url_for('main.production'))
             
             # Use service layer for production
-            success, error_data, production_log = ProductionService.create_production(quantity, notes)
+            # Updated signature to receive low_stock_materials
+            result = ProductionService.create_production(quantity, notes)
+            
+            # Handle return based on whether it's the old 3-tuple or new 4-tuple (for safety, though we updated it)
+            if len(result) == 4:
+                success, error_data, production_log, low_stock_materials = result
+            else:
+                success, error_data, production_log = result
+                low_stock_materials = []
             
             if success:
                 flash(f'Successfully produced {quantity} bundles!', 'success')
+                
+                # Trigger Immediate Alerts if materials are low
+                if low_stock_materials:
+                    # Import email_service from app to send immediate alerts
+                    from app import email_service
+                    
+                    # 1. Immediate In-App Flash Alerts
+                    for material in low_stock_materials:
+                        flash(f'⚠️ Low Stock Warning: {material.name} is low ({material.quantity:.2f} {material.unit})', 'warning')
+                    
+                    # 2. Immediate Email Alerts
+                    # Send to configured admin email to ensure delivery
+                    recipient = current_app.config.get('ADMIN_EMAIL')
+                    if not recipient or '@' not in recipient:
+                        recipient = current_user.email
+                    
+                    if recipient and '@' in recipient:
+                        email_service.send_low_stock_alert(recipient, low_stock_materials)
             else:
                 if error_data and isinstance(error_data, list):
                     missing_info = ', '.join([

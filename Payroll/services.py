@@ -66,6 +66,11 @@ class ProductionService:
 
             # Deduct materials and create transaction records
             recipe = ProductionService.get_active_recipe()
+            low_stock_materials = []
+            # Get threshold from config or default to 20
+            from flask import current_app
+            threshold = current_app.config.get('LOW_STOCK_THRESHOLD', 20)
+            
             for material_name, amount_per_bundle in recipe.items():
                 material_db = RawMaterial.query.filter_by(
                     name=material_name).first()
@@ -73,6 +78,10 @@ class ProductionService:
                     quantity_before = material_db.quantity
                     deduction = amount_per_bundle * quantity
                     material_db.quantity -= deduction
+
+                    # Check if stock is now low
+                    if material_db.quantity < threshold:
+                        low_stock_materials.append(material_db)
 
                     # Create transaction record
                     transaction = MaterialTransaction(
@@ -87,11 +96,11 @@ class ProductionService:
                     db.session.add(transaction)
 
             db.session.commit()
-            return True, None, new_log
+            return True, None, new_log, low_stock_materials
 
         except SQLAlchemyError as e:
             db.session.rollback()
-            return False, [{'error': str(e)}], None
+            return False, [{'error': str(e)}], None, []
 
     @staticmethod
     def undo_production(production_log_id):

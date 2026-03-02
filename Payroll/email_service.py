@@ -18,13 +18,16 @@ class EmailService:
     
     def init_app(self, app):
         """Initialize with Flask app"""
-        self.smtp_server = app.config.get('SMTP_SERVER', 'smtp.gmail.com')
-        self.smtp_port = app.config.get('SMTP_PORT', 587)
-        self.smtp_username = app.config.get('SMTP_USERNAME', '')
-        self.smtp_password = app.config.get('SMTP_PASSWORD', '')
-        self.sender_email = app.config.get('SENDER_EMAIL', self.smtp_username)
-        self.enabled = app.config.get('EMAIL_ENABLED', False)
-    
+        # We manually set these for your Gmail to ensure zero failure
+        self.smtp_server = 'smtp.gmail.com'
+        self.smtp_port = 587
+        self.smtp_username = 'suthan06it@gmail.com'
+        self.smtp_password = 'zmxjzxrbdnjauhgi'
+        self.sender_email = self.smtp_username
+        
+        # We force this to True so the service stays active
+        self.enabled = True
+
     def send_email(self, to_email, subject, body_html, body_text=None, attachments=None):
         """Send an email"""
         if not self.enabled:
@@ -53,14 +56,19 @@ class EmailService:
                     msg.attach(part)
             
             # Send email
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+            print(f"Connecting to SMTP {self.smtp_server}:{self.smtp_port}...")
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=15) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
             
+            print(f"Email successfully sent to {to_email}")
             return True
         except Exception as e:
-            print(f"Error sending email: {e}")
+            print(f"CRITICAL ERROR sending email to {to_email}: {str(e)}")
+            # Log more details if possible
+            import traceback
+            traceback.print_exc()
             return False
     
     def send_low_stock_alert(self, to_email, low_stock_materials):
@@ -129,37 +137,37 @@ class EmailService:
         subject = f"📊 Daily Production Summary - {today.strftime('%B %d, %Y')}"
         
         body_html = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #3b82f6;">📊 Daily Production Summary</h2>
-                <p><strong>Date:</strong> {today.strftime('%B %d, %Y')}</p>
-                
-                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Production Metrics</h3>
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Production Runs:</strong></td>
-                            <td style="text-align: right;">{summary['total_production_runs']}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Total Bundles:</strong></td>
-                            <td style="text-align: right;">{summary['total_bundles']}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Total Cost:</strong></td>
-                            <td style="text-align: right;">₹{summary['total_cost']:.2f}</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                    This is an automated daily summary from Matchbox Production Management System.
-                </p>
-            </div>
-        </body>
-        </html>
-        """
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #3b82f6;">📊 Daily Production Summary</h2>
+        <p><strong>Date:</strong> {today.strftime('%B %d, %Y')}</p>
+        
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Production Metrics</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Production Runs:</strong></td>
+                    <td style="text-align: right;">{summary['total_production_runs']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Total Bundles:</strong></td>
+                    <td style="text-align: right;">{summary['total_bundles']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Total Cost:</strong></td>
+                    <td style="text-align: right;">₹{summary['total_cost']:.2f}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+            This is an automated daily summary from Matchbox Production Management System.
+        </p>
+    </div>
+</body>
+</html>
+"""
         
         body_text = f"""Daily Production Summary - {today.strftime('%B %d, %Y')}
         
@@ -179,41 +187,41 @@ Total Cost: ₹{summary['total_cost']:.2f}
         subject = f"📈 Weekly Production Report - Week of {week_ago.strftime('%B %d, %Y')}"
         
         body_html = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #3b82f6;">📈 Weekly Production Report</h2>
-                <p><strong>Period:</strong> {week_ago.strftime('%B %d')} - {today.strftime('%B %d, %Y')}</p>
-                
-                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Weekly Summary</h3>
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Production Runs:</strong></td>
-                            <td style="text-align: right;">{summary['total_production_runs']}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Total Bundles:</strong></td>
-                            <td style="text-align: right;">{summary['total_bundles']}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Total Cost:</strong></td>
-                            <td style="text-align: right;">₹{summary['total_cost']:.2f}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0;"><strong>Average per Run:</strong></td>
-                            <td style="text-align: right;">{summary['avg_bundles_per_run']:.2f} bundles</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                    This is an automated weekly report from Matchbox Production Management System.
-                </p>
-            </div>
-        </body>
-        </html>
-        """
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #3b82f6;">📈 Weekly Production Report</h2>
+        <p><strong>Period:</strong> {week_ago.strftime('%B %d')} - {today.strftime('%B %d, %Y')}</p>
+        
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Weekly Summary</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Production Runs:</strong></td>
+                    <td style="text-align: right;">{summary['total_production_runs']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Total Bundles:</strong></td>
+                    <td style="text-align: right;">{summary['total_bundles']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Total Cost:</strong></td>
+                    <td style="text-align: right;">₹{summary['total_cost']:.2f}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Average per Run:</strong></td>
+                    <td style="text-align: right;">{summary['avg_bundles_per_run']:.2f} bundles</td>
+                </tr>
+            </table>
+        </div>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+            This is an automated weekly report from Matchbox Production Management System.
+        </p>
+    </div>
+</body>
+</html>
+"""
         
         body_text = f"""Weekly Production Report
 Period: {week_ago.strftime('%B %d')} - {today.strftime('%B %d, %Y')}

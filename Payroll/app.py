@@ -83,7 +83,7 @@ def create_default_admin():
     if User.query.filter_by(role='admin').count() == 0:
         admin = User(
             username='admin',
-            email='admin@matchbox.local',
+            email='suthan06it@gmail.com',
             full_name='System Administrator',
             role='admin'
         )
